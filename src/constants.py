@@ -1,0 +1,1 @@
+PATH_DATA_PROCESSED = "data/processed"
