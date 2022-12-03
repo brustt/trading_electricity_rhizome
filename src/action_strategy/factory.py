@@ -1,29 +1,13 @@
-from abc import ABC
-from enum import Enum, auto
-
-class TradeAction(Enum):
-    BUY = auto()
-    SELL = auto()
-    HOLD = auto()
-
-trade_action = {
-    1:TradeAction.BUY.name,
-    0:TradeAction.HOLD.name,
-    -1:TradeAction.SELL.name,
-}
+from src.action_strategy.mean_reversion import MeanReversion
+from src.action_strategy.pair_method import PairMethod
 
 
-class ActionStrategy(ABC):
-    
-    @property
-    def buy(self):
-        return TradeAction.BUY
+class StrategyFactory:
+    def get_strategy(self, **kwargs):
 
-    @property
-    def sell(self):
-        return TradeAction.SELL
-
-    @property
-    def hold(self):
-        return TradeAction.HOLD
-
+        name_strategy = kwargs["name_strategy"]
+        choice_strategy_builder = {
+            "mean_reversion": {"builder": MeanReversion, "params": []},
+            "pair_method": {"builder": PairMethod, "params": []},
+        }
+        return choice_strategy_builder[name_strategy]["builder"](**kwargs)
