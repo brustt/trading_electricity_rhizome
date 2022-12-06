@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-
+import numpy as np
 import click
 
 from src.experiment import Experiment, init_experiment_classes
@@ -40,6 +40,8 @@ def run_trading(market_name, exp_name):
 
     # Init classes
     log.info("Init classes..")
+    config_exp["rho_d"] = np.sqrt(0.7)
+    config_exp["rho_s"] = np.sqrt(0.7)
     stock, balance, sampler, forecast_runner, strategy = init_experiment_classes(
         prices, config_exp
     )

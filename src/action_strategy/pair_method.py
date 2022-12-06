@@ -64,6 +64,51 @@ class CheckOrderValidity:
         return dict(idx=idx, reason="valid")
 
 
+class CheckOrderValidity:
+    """check validity order
+    - sequential daily order found
+    - return idx's day when stock is full or empty
+    """
+
+    def __init__(self):
+        pass
+
+    def trade_unit(self, s_price: pd.Series, stock, balance):
+        # print("----------")
+        # print(f"IDX {s_price.name}")
+        flow = stock.update_stock(s_price["action"], s_price["flow"])
+
+        balance.update_balance(
+            action=s_price["action"],
+            price=s_price["true_prices"],
+            flow=flow,
+        )
+        return flow, balance, stock
+
+    def check_orders_validty(self, orders, stock, balance):
+        flows = []
+        stock_c, balance_c = copy.deepcopy(stock), copy.deepcopy(balance)
+
+        orders["true_prices"] = orders["value"]
+        print("\n ==== Validity Check ==== \n")
+        for idx, s_price in orders.iterrows():
+            print(f"=== {idx} ===")
+            print(f"Current cpty : {stock_c.current_cpty}")
+            print(f"Current balance : {balance_c.current_level}")
+
+            flow, balance_c, stock_c = self.trade_unit(s_price, stock_c, balance_c)
+            print(s_price['action'], flow)
+            if stock_c.is_empty or stock_c.is_full:
+                return (
+                    dict(idx=idx, reason="empty")
+                    if stock_c.is_empty
+                    else dict(idx=idx, reason="full")
+                )
+            flows.append(flow)
+
+        return dict(idx=idx, reason="valid")
+
+
 class PairMethod(ActionStrategy):
     """
     Pair method strategy
@@ -90,10 +135,10 @@ class PairMethod(ActionStrategy):
         )
 
         current_prices = window_pred_prices.copy()
-        print(current_prices)
+        #print(current_prices)
         it = 0
 
-        qty = dict(zip(np.arange(0, len(current_prices)), np.ones(len(current_prices))))
+        qty = dict(zip(np.arange(0, len(current_prices)), [self.unit_pwr]*len(current_prices)))
         current_diff = 0
         valid = False
         removed_prices_sell = []
@@ -160,7 +205,7 @@ class PairMethod(ActionStrategy):
 
             # reset qty
             qty = dict(
-                zip(list(current_prices.keys()), np.ones(len(current_prices.keys())))
+                zip(list(current_prices.keys()), [self.unit_pwr]*len(current_prices))
             )
         if passes_list:
             orders = self._get_action_window(passes_list, prices=window_pred_prices)
@@ -230,12 +275,12 @@ class PairMethod(ActionStrategy):
                             self.unit_pwr * 1 * self.rho_d * self.rho_s,
                             passes_list["still_cpty"],
                         ),
-                        1,
+                        3,
                     ),
                     "value": max_p,
                 }
 
-                qty[max_p.idx] = np.round(qty[max_p.idx] - passe["max"]["qty"], 1)
+                qty[max_p.idx] = np.round(qty[max_p.idx] - passe["max"]["qty"], 3)
 
                 passes_list["still_cpty"] -= passe["max"]["qty"]
 
@@ -288,7 +333,6 @@ class PairMethod(ActionStrategy):
                 )
 
                 sell_order += max_p.value * passe["max"]["qty"]
-
                 qty[max_p.idx] = np.round(qty[max_p.idx] - passe["max"]["qty"], 1)
 
                 if qty[max_p.idx] <= 0:
@@ -442,7 +486,6 @@ class PairMethod(ActionStrategy):
         }
 
     def find_max(self, prices, pos=0):
-        print(prices)
         max_ = sorted(prices.items(), key=lambda x: (x[1], [0]), reverse=True)[pos]
         return Price(idx=max_[0], value=max_[1], type_order=TradeAction["SELL"].name)
 

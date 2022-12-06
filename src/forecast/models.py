@@ -49,8 +49,9 @@ class ARIMAModel(ForecastModel):
 
 class LGBMForecast(ForecastModel):
     def __init__(self, **params):
+        # change here - dirty fix
         self.params = params if params else []
-        self.model = LGBMRegressor(self.params) if self.params else LGBMRegressor()
+        self.model = LGBMRegressor(**self.params) if self.params else LGBMRegressor(random_state=12)
 
     def forecast(self, n_frames, sampler):
         x_test_window = sampler.x_test[:n_frames]
