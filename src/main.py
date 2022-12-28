@@ -42,7 +42,7 @@ def run_trading(market_name, exp_name):
     log.info("Init classes..")
     config_exp["rho_d"] = np.sqrt(0.7)
     config_exp["rho_s"] = np.sqrt(0.7)
-    stock, balance, sampler, forecast_runner, strategy = init_experiment_classes(
+    stock, balance, sampler, forecast_runner = init_experiment_classes(
         prices, config_exp
     )
 
@@ -51,7 +51,6 @@ def run_trading(market_name, exp_name):
         stock=stock,
         df=sampler.df,
         forecast_runner=forecast_runner,
-        strategy=strategy,
         balance=balance,
         config_exp=config_exp,
     )

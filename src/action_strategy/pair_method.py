@@ -90,14 +90,14 @@ class CheckOrderValidity:
         stock_c, balance_c = copy.deepcopy(stock), copy.deepcopy(balance)
 
         orders["true_prices"] = orders["value"]
-        print("\n ==== Validity Check ==== \n")
+        #print("\n ==== Validity Check ==== \n")
         for idx, s_price in orders.iterrows():
-            print(f"=== {idx} ===")
-            print(f"Current cpty : {stock_c.current_cpty}")
-            print(f"Current balance : {balance_c.current_level}")
+            #print(f"=== {idx} ===")
+            #print(f"Current cpty : {stock_c.current_cpty}")
+            #print(f"Current balance : {balance_c.current_level}")
 
             flow, balance_c, stock_c = self.trade_unit(s_price, stock_c, balance_c)
-            print(s_price['action'], flow)
+            #print(s_price['action'], flow)
             if stock_c.is_empty or stock_c.is_full:
                 return (
                     dict(idx=idx, reason="empty")
@@ -114,24 +114,26 @@ class PairMethod(ActionStrategy):
     Pair method strategy
     """
 
-    def __init__(self, storage_pwr, rho_d, rho_s, init_storage_cpty, **kwargs):
+    def __init__(self, storage_pwr: float, rho_d: float, rho_s:float, init_storage_cpty: float, column_to_trade: str, **kwargs):
         self.unit_pwr = storage_pwr
         self.rho_d = rho_d
         self.rho_s = rho_s
         self.night_stock = init_storage_cpty
         self.validity_checker = CheckOrderValidity()
+        self.column_to_trade = "value" if column_to_trade == "pred" else "true_prices"
         self.kwargs = kwargs
 
     def get_indicator(self, x_train=None, x_test=None):
+        log.info(f"Trade on {self.column_to_trade}")
         """dummy function for TradeManager integration"""
 
-    def get_action_window(
+    def trade_on_window(
         self, window_prices: pd.DataFrame, stock, balance
     ) -> pd.DataFrame:
         """deploy pair method here"""
 
         window_pred_prices = dict(
-            zip(np.arange(0, 24), window_prices["value"].tolist())
+            zip(np.arange(0, 24), window_prices[self.column_to_trade].tolist())
         )
 
         current_prices = window_pred_prices.copy()
@@ -238,7 +240,7 @@ class PairMethod(ActionStrategy):
             and (passes_list["iteration"] < 24)
         ):
             it = passes_list["iteration"]
-            print(f"--- PASSE : {it+1} ----")
+            # print(f"--- PASSE : {it+1} ----")
             passe = self.init_passe()
 
             sell_order = 0
@@ -289,7 +291,7 @@ class PairMethod(ActionStrategy):
 
                 if qty[max_p.idx] <= 0:
                     pos = 0
-                    print("DEL")
+                    #print("DEL")
                     del current_prices[max_p.idx]
 
                 if len(current_prices) == 0:
@@ -338,11 +340,11 @@ class PairMethod(ActionStrategy):
                 if qty[max_p.idx] <= 0:
                     del current_prices[max_p.idx]
             # --- info ---
-            print(f"""SELL : {passe["max"]["value"]} -- qty : {passe["max"]["qty"]}""")
-            print(
-                f"""SELL : {passe["max2"]["value"]} -- qty : {passe["max2"]["qty"]}"""
-            )
-            print(f"""BUY : {passe["min"]["value"]} -- qty : {passe["min"]["qty"]}""")
+            #print(f"""SELL : {passe["max"]["value"]} -- qty : {passe["max"]["qty"]}""")
+            #print(
+            #    f"""SELL : {passe["max2"]["value"]} -- qty : {passe["max2"]["qty"]}"""
+            #)
+            #print(f"""BUY : {passe["min"]["value"]} -- qty : {passe["min"]["qty"]}""")
 
             ##
             # GAIN
@@ -354,7 +356,7 @@ class PairMethod(ActionStrategy):
             # print(current_prices)
 
             if passe["diff"] < 0:
-                print(f"""OUT : {passe["diff"]} => back passe {it}""")
+                #print(f"""OUT : {passe["diff"]} => back passe {it}""")
                 # print(f"""RESTE : {passes_list["still_cpty"]}""")
                 return dict(passes=passes_list, reason="diff")
             passes_list["passes"].append(passe)
@@ -486,6 +488,8 @@ class PairMethod(ActionStrategy):
         }
 
     def find_max(self, prices, pos=0):
+        # prevent for looking second max when we have only one price still activated
+        pos=min(pos, len(prices)-1)
         max_ = sorted(prices.items(), key=lambda x: (x[1], [0]), reverse=True)[pos]
         return Price(idx=max_[0], value=max_[1], type_order=TradeAction["SELL"].name)
 

@@ -1,8 +1,6 @@
-import logging
 from dataclasses import dataclass
-
 import pandas as pd
-
+import logging
 from src.action_strategy.abstract_models import ActionStrategy
 from src.forecast.runner import ForecastRunner
 
@@ -26,7 +24,7 @@ class TradeManagerV0:
         )
         self.forecast_runner.run_training()
         pred_prices = self.forecast_runner.run_forecast()
-        results = self.strategy.get_action_window(pred_prices, exp.stock, exp.balance)
+        results = self.strategy.trade_on_window(pred_prices, exp.stock, exp.balance)
         for _, s_price in results.iterrows():
             self.trade_unit(s_price, exp)
         return results

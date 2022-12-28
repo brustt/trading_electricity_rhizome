@@ -14,6 +14,9 @@ date_start: "01-01-2020"
 date_end: "31-12-2020"
 hour_begin_trade: "00"
 
+# column to predict
+column_to_trade: "true_prices"
+
 #strategy
 name_strategy: "pair_method"
 # mean reversion

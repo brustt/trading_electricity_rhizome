@@ -50,11 +50,8 @@ def init_experiment_classes(prices:pd.DataFrame, config_exp: Dict) -> Tuple:
         n_frames=config_exp["n_frames"],
         sampler=sampler,
     )
-    # trading strategy
-    strategy = StrategyFactory().get_strategy(**config_exp)
-    log.info(f"STRATEGY : {config_exp['name_strategy']}")
     
-    return (stock, balance, sampler, forecast_runner, strategy)
+    return (stock, balance, sampler, forecast_runner)
 
 
 @dataclass
@@ -65,16 +62,16 @@ class Experiment:
     stock: Stock
     df: pd.DataFrame
     forecast_runner: ForecastRunner
-    strategy: any
     balance: Balance
     config_exp: Dict
     df_results: pd.DataFrame = field(init=False)
-
-    def __post_init__(self):
-        self.df_results = None
+    strategy: StrategyFactory = field(init=False)
 
     def run(self):
 
+        # trading strategy
+        self.strategy = StrategyFactory().get_strategy(**self.config_exp)
+        log.info(f"STRATEGY : {self.config_exp['name_strategy']}")
         results_window = []
         self.forecast_runner.sampler.init_train_test_set(
             date_start=self.config_exp["date_start"],

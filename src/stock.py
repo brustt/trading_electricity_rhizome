@@ -35,7 +35,7 @@ class Stock:
             qty = self.add_to_stock(flow)
         elif action == TradeAction.SELL.name:
             qty = self.retrieve_from_stock(flow)
-        print(f"Updated Stock : {self.current_cpty}")
+        log.info(f"Updated Stock : {self.current_cpty}")
         self.history.append((qty, self.current_cpty,))
         return qty
 
@@ -68,7 +68,6 @@ class Stock:
             qty = min(flow*self.rho_s, (self.storage_cpty - self.current_cpty))
             flow=-flow
             
-        print(f'current : {self.current_cpty} - add qty : {qty} - flow : {flow}')
         self.current_cpty += qty
         
 
@@ -98,7 +97,6 @@ class Stock:
             qty = min(flow/self.rho_d, self.current_cpty)
 
         
-        print(f'current : {self.current_cpty} - retrieve qty : {qty} - flow : {flow}')
         self.current_cpty -= qty
 
         return flow
@@ -117,8 +115,8 @@ class Balance:
     def update_balance(self, action: str, price: float, flow: float):
         # check if stock was updated
         self.current_level += price*flow
-        log.info(f"ADD : {price*flow} €")
-        log.info(f"Current : { self.current_level} €")
+        #log.info(f"ADD : {price*flow} €")
+        #log.info(f"Current : { self.current_level} €")
 
         action = action if flow !=0 else (f"HOLD_{action[0].lower()}") if action != "HOLD" else "HOLD"
         self.history.append((price, price*flow, action, self.current_level,))
