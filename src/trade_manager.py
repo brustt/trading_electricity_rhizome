@@ -32,7 +32,7 @@ class TradeManagerV0:
     def trade_unit(self, s_price: pd.Series, exp):
         # add qty
         flow = exp.stock.update_stock(s_price["action"], s_price["flow"])
-
+        log.info(f"--- {s_price.name} ---")
         exp.balance.update_balance(
             action=s_price["action"],
             price=s_price["true_prices"],

@@ -141,7 +141,6 @@ class PairMethod(ActionStrategy):
         it = 0
 
         qty = dict(zip(np.arange(0, len(current_prices)), [self.unit_pwr]*len(current_prices)))
-        current_diff = 0
         valid = False
         removed_prices_sell = []
         removed_prices_buy = []
@@ -159,7 +158,6 @@ class PairMethod(ActionStrategy):
                 break
             log.info(f"""PASSE OUT : {len(passes_list["passes"])}""")
             orders = self._get_action_window(passes_list, prices=window_pred_prices)
-            log.info(f"""ORDERS : {len(orders)}""")
 
             dict_validity = self.validity_checker.check_orders_validty(
                 orders, stock, balance
@@ -221,6 +219,10 @@ class PairMethod(ActionStrategy):
             )
         orders.index = window_prices.index
         orders = pd.concat([orders, window_prices["true_prices"]], axis=1)
+        # set negative or null prices as BUY by default
+        #orders.loc[orders.value <= 0., "action"] = TradeAction.BUY.name
+        # set flow to None to let automatic flow calculation
+        #orders.loc[orders.value <= 0., "flow"] = np.nan
         return orders
 
     def _pair_method_loop(self, current_prices, qty):

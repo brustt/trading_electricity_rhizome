@@ -65,7 +65,7 @@ class MeanReversion(ActionStrategy):
         window_prices = window_prices.rename({"value": "pred_prices"}, axis=1)
         true_prices = self.prices.loc[window_prices.index].drop(["true_prices"], axis=1)
         results = pd.concat([true_prices, window_prices], axis=1)
-        results["flow"] = None
+        results["flow"] = np.nan
 
         return results
 

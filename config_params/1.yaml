@@ -11,7 +11,7 @@ init_storage_cpty: 300
 market_name: "germany"
 # date bound exp
 date_start: "01-01-2020" 
-date_end: "31-12-2020"
+date_end: "12-01-2020"
 hour_begin_trade: "00"
 
 # column to predict

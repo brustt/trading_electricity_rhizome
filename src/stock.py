@@ -1,6 +1,8 @@
 import logging
 from dataclasses import dataclass, field
 
+import numpy as np
+
 from src.action_strategy.abstract_models import TradeAction
 
 log = logging.getLogger(__name__)
@@ -49,7 +51,7 @@ class Stock:
 
     def add_to_stock(self, flow=None):
         """BUY"""
-        if flow is None:
+        if np.isnan(flow):
             qty = (
                 min(
                     (self.storage_cpty - self.current_cpty), 
@@ -76,7 +78,7 @@ class Stock:
 
     def retrieve_from_stock(self, flow=None):
         """SELL"""
-        if flow is None:
+        if np.isnan(flow):
             qty = (
                 min(
                     self.current_cpty, 
@@ -115,8 +117,8 @@ class Balance:
     def update_balance(self, action: str, price: float, flow: float):
         # check if stock was updated
         self.current_level += price*flow
-        #log.info(f"ADD : {price*flow} €")
-        #log.info(f"Current : { self.current_level} €")
+        log.info(f"ADD : {price*flow} €")
+        log.info(f"Current : { self.current_level} €")
 
         action = action if flow !=0 else (f"HOLD_{action[0].lower()}") if action != "HOLD" else "HOLD"
         self.history.append((price, price*flow, action, self.current_level,))
